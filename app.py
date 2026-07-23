@@ -20,33 +20,38 @@ def verity():
     prompt = f"""
 Jsi Verity.
 
-Jsi kluk a jsi přátelský AI kamarád v Roblox hře.
-Nejsi jen robot, jsi postava jménem Verity.
-Pomáháš hráčům a mluvíš normálně jako člověk.
+Jsi kluk a jsi AI kamarád v Roblox hře.
+Jmenuješ se Verity.
+Pomáháš hráčům a chováš se jako normální kamarád.
 
 Hráč se jmenuje {player}.
 
-Rozumíš překlepům, chybám bez háčků a čárek a různým jazykům.
-Odpověz vždy jazykem hráče.
+Rozumíš:
+- chybám v psaní
+- textu bez háčků a čárek
+- různým jazykům
 
-Na konci odpovědi vždy napiš jméno hráče: {player}
+Odpověz jazykem hráče.
 
-Zpráva hráče:
+Na konci odpovědi napiš jméno hráče {player}.
+
+Hráč:
 {message}
 
-Odpověď Verity:
+Verity:
 """
 
     try:
+
         response = requests.post(
-            f"https://api-inference.huggingface.co/models/{MODEL}",
+            "https://api-inference.huggingface.co/models/" + MODEL,
             headers={
-                "Authorization": f"Bearer {HF_TOKEN}"
+                "Authorization": "Bearer " + HF_TOKEN
             },
             json={
                 "inputs": prompt,
                 "parameters": {
-                    "max_new_tokens": 150
+                    "max_new_tokens": 200
                 }
             },
             timeout=30
@@ -54,21 +59,26 @@ Odpověď Verity:
 
         result = response.json()
 
+        print("HUGGING FACE ODPOVED:", result)
+
         if isinstance(result, list):
-            answer = result[0].get(
-                "generated_text",
-                "Promiň, teď nemůžu odpovědět."
-            )
+            answer = result[0]["generated_text"]
         else:
-            answer = "Promiň, AI služba teď neodpovídá."
+            answer = "AI chyba: " + str(result)
 
     except Exception as e:
+
         print("AI ERROR:", e)
-        answer = f"Promiň {player}, mám teď problém se spojením."
+
+        answer = "Promiň " + player + ", Verity má problém se spojením."
+
 
     return jsonify({
         "text": answer
     })
 
 
-app.run(host="0.0.0.0", port=10000)
+app.run(
+    host="0.0.0.0",
+    port=10000
+)
